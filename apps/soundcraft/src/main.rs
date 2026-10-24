@@ -13,6 +13,7 @@
 
 mod config;
 mod control_server;
+mod tm_kanal;
 #[cfg(any(target_os = "windows", test))]
 mod graphics;
 mod logging;
