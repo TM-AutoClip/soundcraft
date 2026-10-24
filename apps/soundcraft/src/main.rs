@@ -14,6 +14,7 @@
 mod config;
 mod control_server;
 mod env;
+mod tm_kanal;
 #[cfg(any(target_os = "windows", test))]
 mod graphics;
 mod launch_args;

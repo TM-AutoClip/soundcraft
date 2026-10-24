@@ -31,6 +31,9 @@ const MAX_QUEUED_REQUESTS: usize = MAX_CONNECTIONS;
 /// printed; bind or spawn failures are logged instead of panicking.
 pub fn start(port: u16, ctx: egui::Context) -> Receiver<ControlRequest> {
     let (tx, rx) = sync_channel::<ControlRequest>(MAX_QUEUED_REQUESTS);
+    if !crate::tm_kanal::kanal_acilabilir("soundcraft") {
+        return rx; // TM AutoClip yaması: belirteçsiz kanal açılmaz
+    }
     let listener = match TcpListener::bind(("127.0.0.1", port)) {
         Ok(l) => l,
         Err(e) => {
@@ -106,6 +109,7 @@ fn read_bounded_line(reader: &mut impl BufRead, buf: &mut Vec<u8>, max: usize) -
 /// s reply deadline, and stop at EOF, invalid UTF-8 or a closed request queue. Bad JSON still gets an error reply.
 fn serve(stream: TcpStream, tx: SyncSender<ControlRequest>, ctx: egui::Context) {
     let Ok(read) = stream.try_clone() else { return };
+    let Some(read) = crate::tm_kanal::dogrula(read, &mut &stream) else { return }; // TM AutoClip yaması: ilk satır auth
     let mut out = stream;
     let mut reader = BufReader::new(read);
     let mut buf = Vec::new();
