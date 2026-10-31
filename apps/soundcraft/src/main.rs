@@ -253,7 +253,7 @@ fn main() -> eframe::Result {
             let player =
                 if no_audio { None } else { Some(soundcraft_playback::Player::with_config(Arc::new(engine.session().clone()), &prefs.audio)) };
             let mut app = SoundApp::new(engine, player, services());
-            app.set_startup_update_check(true);
+            app.set_startup_update_check(false); // TM AutoClip yamasi: surum sabit, acilista guncelleme sorulmaz
             app.set_system_fonts(env.system_fonts());
             app.autosave_dir = env.config_dir.as_ref().map(|d| d.join("Autosave"));
             app.leftovers = app.autosave_dir.as_deref().map(soundcraft_engine::autosave::leftovers).unwrap_or_default();
