@@ -115,7 +115,13 @@ pub fn parse_position(
             let v = sr.samples(m * 60.0 + s);
             Ok(if neg { -v } else { v })
         }
-        TimeFormat::Timecode => Ok(Timecode::parse(t)?.to_samples(rate, sr).saturating_sub(tc_start)),
+        TimeFormat::Timecode => {
+            let tc = Timecode::parse(t)?;
+            if tc.minutes >= 60 || tc.seconds >= 60 || tc.frames >= rate.nominal().max(1) {
+                return Err(err());
+            }
+            Ok(tc.to_samples(rate, sr).saturating_sub(tc_start))
+        }
         TimeFormat::FeetFrames => {
             let (ft, fr) = t.split_once('+').ok_or_else(err)?;
             let ft: i64 = ft.trim().parse().map_err(|_| err())?;
@@ -124,7 +130,7 @@ pub fn parse_position(
         }
         TimeFormat::BarsBeats => {
             let parts: Vec<i64> =
-                t.split(['|', '.', ' ']).filter(|p| !p.is_empty()).map(|p| p.parse::<i64>()).collect::<Result<_, _>>().map_err(|_| err())?;
+                t.split(['|', '.', ' ']).filter(|p| !p.is_empty()).map(str::parse::<i64>).collect::<Result<_, _>>().map_err(|_| err())?;
             let bb = BarBeat {
                 bar: *parts.first().ok_or_else(err)?,
                 beat: parts.get(1).copied().unwrap_or(1).max(1),
@@ -182,6 +188,19 @@ mod tests {
                 let text = format_position(s, fmt, sr, &map, rate, 0, 0);
                 let back = parse_position(&text, fmt, sr, &map, rate, 0, 0).unwrap();
                 assert!((back - s).abs() <= 48, "{fmt:?} {s} → {text} → {back}");
+            }
+        }
+    }
+
+    #[test]
+    fn parse_round_trips_timecode_negative() {
+        let (sr, map, _) = ctx();
+        let rate = FrameRate::Fps25;
+        for fmt in [TimeFormat::Timecode, TimeFormat::FeetFrames] {
+            for s in [-48_000i64, -96_000 * 3, -1_440_000] {
+                let text = format_position(s, fmt, sr, &map, rate, 0, 0);
+                let back = parse_position(&text, fmt, sr, &map, rate, 0, 0).unwrap();
+                assert_eq!(back, s, "{fmt:?} {s} → {text} → {back}");
             }
         }
     }
