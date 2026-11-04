@@ -309,6 +309,10 @@ pub fn menu_bar(app: &mut SoundApp, ui: &mut egui::Ui) {
                                         instrument_menu(app, ui);
                                     }
                                 }
+                                // TM AutoClip yerel yaması: akış kipinde Dosya menüsünün sonunda "Bitir ve TM AutoClip'e gönder".
+                                if root.path == "File" {
+                                    crate::tm::dosya_menusu(app, ui);
+                                }
                                 if root.path == "AudioSuite" {
                                     ui.separator();
                                     ui.label(egui::RichText::new("Processes selected clips offline").small().color(t.text_dim));
