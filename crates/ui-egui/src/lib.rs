@@ -29,6 +29,8 @@ pub mod palette;
 pub mod panels;
 pub mod shortcuts;
 pub mod theme;
+/// TM AutoClip yerel yaması (oturum, "Bitir ve TM AutoClip'e gönder").
+pub mod tm;
 pub mod toolbar;
 pub mod updates_ui;
 pub mod video_track;
