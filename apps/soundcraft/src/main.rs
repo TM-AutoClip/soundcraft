@@ -14,6 +14,7 @@
 mod config;
 mod control_server;
 mod env;
+mod tm;
 mod tm_kanal;
 #[cfg(any(target_os = "windows", test))]
 mod graphics;
@@ -197,6 +198,8 @@ fn main() -> eframe::Result {
     // After the arguments and the logger: reading resolves the settings folder, which creates it,
     // and a malformed switch is logged.
     let env = Env::read();
+    // TM AutoClip yerel yaması: verilen oturum geçersizse ileti + çıkış 3 (oturum yoksa serbest açılış).
+    tm::kapi();
     let (demo, no_audio, control_port) = (launch.demo, launch.no_audio, launch.control_port);
     let files = launch.files;
     log::info!("SoundCraft {}", soundcraft_automation::args::long_version());
